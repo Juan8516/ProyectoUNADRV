@@ -7,7 +7,7 @@ using UnityEngine.XR.Management;
 public class CameraPointerManager : MonoBehaviour
 {
     [SerializeField] private GameObject pointer;
-    [SerializeField] private float maxDistancePointer = 4.5f;
+    [SerializeField] private float maxDistancePointer = 2.5f;
 
     [Range(0, 1)]
     [SerializeField] private float disPointerObject = 0.95f;
@@ -45,7 +45,7 @@ public class CameraPointerManager : MonoBehaviour
                 // Se deja de mirar el objeto anterior
                 if (_gazedAtObject != null)
                 {
-                    _gazedAtObject.SendMessage("OnPointerExit", null, SendMessageOptions.DontRequireReceiver);
+                    _gazedAtObject?.SendMessage("OnPointerExit", null, SendMessageOptions.DontRequireReceiver);
                 }
 
                 // Nuevo objeto en la mira
@@ -67,7 +67,7 @@ public class CameraPointerManager : MonoBehaviour
             // Si no se mira ningún objeto, notifica salida
             if (_gazedAtObject != null)
             {
-                _gazedAtObject.SendMessage("OnPointerExit", null, SendMessageOptions.DontRequireReceiver);
+                _gazedAtObject?.SendMessage("OnPointerExit", null, SendMessageOptions.DontRequireReceiver);
                 _gazedAtObject = null;
             }
         }
@@ -77,7 +77,7 @@ public class CameraPointerManager : MonoBehaviour
         {
             if (_gazedAtObject != null)
             {
-                _gazedAtObject.SendMessage("OnPointerClick", null, SendMessageOptions.DontRequireReceiver);
+                _gazedAtObject?.SendMessage("OnPointerClick", null, SendMessageOptions.DontRequireReceiver);
             }
         }
 
@@ -90,19 +90,19 @@ public class CameraPointerManager : MonoBehaviour
         }
     }
 
+    private void PointerOnGaze(Vector3 hitpoint)
+    {
+        float scaleFactor = scaleSize * Vector3.Distance(transform.position, hitpoint);
+        pointer.transform.localScale = Vector3.one * scaleFactor;
+        pointer.transform.parent.position = CalculatePointerPosition(transform.position, hitpoint, disPointerObject);
+    }
+
     private void PointerOutGaze()
     {
         pointer.transform.localScale = Vector3.one * 0.1f;
         pointer.transform.parent.transform.localPosition = new Vector3(0, 0, maxDistancePointer);
         pointer.transform.parent.parent.transform.rotation = transform.rotation;
         GazeManager.Instance.CancelGazeSelection();
-    }
-
-    private void PointerOnGaze(Vector3 hitpoint)
-    {
-        float scaleFactor = scaleSize * Vector3.Distance(transform.position, hitpoint);
-        pointer.transform.localScale = Vector3.one * scaleFactor;
-        pointer.transform.parent.position = CalculatePointerPosition(transform.position, hitpoint, disPointerObject);
     }
 
     private Vector3 CalculatePointerPosition(Vector3 p0, Vector3 p1, float t)
