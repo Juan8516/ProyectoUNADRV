@@ -1,37 +1,52 @@
 using UnityEngine;
-using System.Collections;
 
-public class BackgroundMusic : MonoBehaviour
+public class AudioManager : MonoBehaviour
 {
-    public AudioClip backgroundClip;
-    public float targetVolume = 0.5f;   // volumen final
-    public float fadeDuration = 3f;     // duración del fade (en segundos)
+    public static AudioManager instance;
 
-    private AudioSource audioSource;
+    [Header("Background Music")]
+    public AudioClip backgroundMusic;
+    public float musicVolume = 0.5f;
 
-    void Start()
+    private AudioSource musicSource;
+
+    void Awake()
     {
-        audioSource = gameObject.AddComponent<AudioSource>();
-        audioSource.clip = backgroundClip;
-        audioSource.loop = true;
-        audioSource.playOnAwake = false;
-        audioSource.volume = 0f; // comienza en silencio
-        audioSource.Play();
-        StartCoroutine(FadeIn());
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+
+            // Crear AudioSource para música
+            musicSource = gameObject.AddComponent<AudioSource>();
+            musicSource.loop = true;
+            musicSource.volume = musicVolume;
+
+            PlayBackgroundMusic();
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
-    private IEnumerator FadeIn()
+    public void PlayBackgroundMusic()
     {
-        float elapsed = 0f;
-
-        while (elapsed < fadeDuration)
+        if (backgroundMusic != null)
         {
-            elapsed += Time.deltaTime;
-            audioSource.volume = Mathf.Lerp(0f, targetVolume, elapsed / fadeDuration);
-            yield return null;
+            musicSource.clip = backgroundMusic;
+            musicSource.Play();
         }
+    }
 
-        audioSource.volume = targetVolume; // asegura el volumen final
+    public void SetMusicVolume(float volume)
+    {
+        musicVolume = Mathf.Clamp01(volume);
+        musicSource.volume = musicVolume;
+    }
+
+    public void ToggleMusic()
+    {
+        musicSource.mute = !musicSource.mute;
     }
 }
-

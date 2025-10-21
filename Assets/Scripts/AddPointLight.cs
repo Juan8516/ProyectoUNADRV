@@ -2,25 +2,64 @@ using UnityEngine;
 
 public class AddPointLight : MonoBehaviour
 {
-    [Header("Configuración de la luz")]
-    public Color lightColor = Color.white;
-    public float intensity = 2f;
-    public float range = 5f;
+    [Header("Configuración de la Luz")]
+    public Light pointLight;
+    public float maxIntensity = 4f;
+    public float minIntensity = 0.3f;
+    public float pulseDuration = 0.5f;
+    public Color gazeColor = Color.cyan;
+    private Color originalColor;
 
-    void Start()
+    private void Awake()
     {
-        // Verifica si ya tiene una luz, para no duplicar
-        if (GetComponentInChildren<Light>() == null)
+        // Si no hay una luz asignada, crear una
+        if (pointLight == null)
         {
-            GameObject lightObj = new GameObject("PointLight");
-            lightObj.transform.SetParent(transform);
-            lightObj.transform.localPosition = Vector3.up * 1f; // 1 unidad sobre el modelo
-            Light light = lightObj.AddComponent<Light>();
-            light.type = LightType.Point;
-            light.color = lightColor;
-            light.intensity = intensity;
-            light.range = range;
-            light.shadows = LightShadows.Soft;
+            pointLight = GetComponent<Light>();
+            if (pointLight == null)
+            {
+                pointLight = gameObject.AddComponent<Light>();
+                pointLight.type = LightType.Point;
+            }
         }
+
+        originalColor = pointLight.color;
+    }
+
+    /// <summary>
+    /// Llamado cuando el jugador mantiene la mirada en un objeto.
+    /// </summary>
+    public void OnGazeSelect()
+    {
+        StopAllCoroutines();
+        StartCoroutine(LightPulse());
+    }
+
+    private System.Collections.IEnumerator LightPulse()
+    {
+        float t = 0f;
+        pointLight.color = gazeColor;
+
+        // Incrementa intensidad
+        while (t < pulseDuration)
+        {
+            t += Time.deltaTime;
+            float value = Mathf.Lerp(minIntensity, maxIntensity, t / pulseDuration);
+            pointLight.intensity = value;
+            yield return null;
+        }
+
+        // Reduce intensidad
+        t = 0f;
+        while (t < pulseDuration)
+        {
+            t += Time.deltaTime;
+            float value = Mathf.Lerp(maxIntensity, minIntensity, t / pulseDuration);
+            pointLight.intensity = value;
+            yield return null;
+        }
+
+        pointLight.color = originalColor;
     }
 }
+
