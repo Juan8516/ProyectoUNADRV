@@ -52,7 +52,8 @@ public class GazeSelector : MonoBehaviour
         Ray ray = new Ray(transform.position, transform.forward);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit))
+        int layerMask = LayerMask.GetMask("Interactable");
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
         {
             if (hit.transform.gameObject != gazedAtObject)
             {
