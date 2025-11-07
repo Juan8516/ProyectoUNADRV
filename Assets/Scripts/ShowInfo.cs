@@ -16,6 +16,7 @@ public class ShowInfo : MonoBehaviour
         infoText.text = info;
         StopAllCoroutines(); // por si ya estaba corriendo otra
         StartCoroutine(HideAfterSeconds());
+        FindObjectOfType<QuizManager>().StartQuestion(gameObject.tag);
     }
 
     private IEnumerator HideAfterSeconds()

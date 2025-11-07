@@ -1,41 +1,53 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class VRTeleportManager : MonoBehaviour
 {
-    [Header("Configuración de teletransporte")]
-    public Camera vrCamera;
-    public Transform homePoint;           // punto de inicio
-    public float teleportHeightOffset = 1.6f; // altura sobre el suelo
+    [Header("Player Reference")]
+    public Transform player; // Arrastra tu UnPlayer aquÃ­ desde el inspector
 
-    private Vector3 lastPosition;         // donde estabas antes de teletransportarte
+    [Header("Puntos de teletransporte (en orden)")]
+    public Transform[] assetPoints;  // HeartPoint, BrainPoint, BonesPoint, LungsPoint
+    private int currentAssetIndex = 0;
+
+    [Header("Punto de inicio")]
+    public Transform homePoint;
 
     void Start()
     {
-        if (vrCamera == null)
-            vrCamera = Camera.main;
-
-        if (homePoint == null)
-            homePoint = transform; // posición inicial por defecto
+        // Mover jugador al punto inicial si existe
+        if (homePoint != null && player != null)
+            player.position = homePoint.position;
     }
 
-    /// <summary>
-    /// Teletransporta al jugador a una posición destino.
-    /// </summary>
-    public void TeleportTo(Vector3 destination)
+    public void TeleportToNextAsset()
     {
-        lastPosition = transform.position;
+        currentAssetIndex++;
 
-        // Mover al nuevo punto (manteniendo orientación Y)
-        Vector3 target = new Vector3(destination.x, destination.y + teleportHeightOffset, destination.z);
-        transform.position = target;
+        // Si ya terminÃ³ todos los assets â†’ regresar a casa
+        if (currentAssetIndex >= assetPoints.Length)
+        {
+            Debug.Log("ðŸŽ‰ Recorrido completado. Regresando al inicio...");
+            ReturnHome();
+            return;
+        }
+
+        TeleportTo(assetPoints[currentAssetIndex].position);
     }
 
-    /// <summary>
-    /// Regresa a la posición original o al punto "Home".
-    /// </summary>
     public void ReturnHome()
     {
-        transform.position = homePoint != null ? homePoint.position : lastPosition;
+        if (homePoint != null)
+            TeleportTo(homePoint.position);
+
+        // Reiniciar recorrido
+        currentAssetIndex = 0;
+    }
+
+    private void TeleportTo(Vector3 targetPosition)
+    {
+        if (player != null)
+            player.position = targetPosition;
     }
 }
+
 
