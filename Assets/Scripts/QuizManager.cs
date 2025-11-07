@@ -15,6 +15,7 @@ public class QuizManager : MonoBehaviour
     }
 
     public QuestionData[] questions;
+    public TextMeshProUGUI scoreText;
 
     [Header("UI")]
     public GameObject questionPanel;
@@ -26,6 +27,8 @@ public class QuizManager : MonoBehaviour
     private int attempts = 0;
 
     private QuestionData currentQuestion;
+    public VRTeleportManager teleportManager;   // ← esta es la referencia que faltaba
+
 
     void Start()
     {
@@ -55,7 +58,7 @@ public class QuizManager : MonoBehaviour
     {
         // Obtener cámara y ubicar panel frente al jugador
         Transform cam = Camera.main.transform;
-        StartCoroutine(MovePanelToFront());
+        //StartCoroutine(MovePanelToFront());
 
 
         questionPanel.SetActive(true);
@@ -75,29 +78,33 @@ public class QuizManager : MonoBehaviour
         FindObjectOfType<LookAtUI>().target = null;
     }
 
-    void Answer(int index)
+    public void Answer(int index)
     {
+        // Si la respuesta es correcta
         if (index == currentQuestion.correctIndex)
         {
             score += 10;
-            Debug.Log("✅ Correcto. Puntos: " + score);
+            scoreText.text = "Puntaje: " + score;
+
+            // Ocultar panel de pregunta
             questionPanel.SetActive(false);
-            FindObjectOfType<LookAtUI>().target = null;
-            FindObjectOfType<VRTeleportManager>().TeleportToNextAsset();
+
+            // Quitar objetivo de la cámara (si lo usabas)
+            if (FindObjectOfType<LookAtUI>() != null)
+                FindObjectOfType<LookAtUI>().target = null;
+
+            // Ir al siguiente punto del recorrido
+            teleportManager.TeleportToNextAsset();
+
+            Debug.Log("✅ Respuesta correcta. Avanzando al siguiente asset.");
         }
         else
         {
-            attempts++;
-            if (attempts >= 2)
-            {
-                questionText.text = "❌ Incorrecto. Vuelve a intentarlo.";
-            }
-            else
-            {
-                questionText.text = "⚠️ Incorrecto, intenta de nuevo.";
-            }
+            // Respuesta incorrecta → permitir un reintento
+            Debug.Log("❌ Respuesta incorrecta. Intenta nuevamente.");
         }
     }
+
 
     QuestionData GetQuestion(string assetName)
     {

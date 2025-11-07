@@ -9,6 +9,7 @@ TagManager:
   - Brain
   - Bones
   - Lungs
+  - HUD
   layers:
   - Default
   - TransparentFX
